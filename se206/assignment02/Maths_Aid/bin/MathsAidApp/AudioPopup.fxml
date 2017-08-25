@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="139.0" prefWidth="314.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MathsAidApp.CreateCreation">
+   <children>
+      <Button layoutX="214.0" layoutY="92.0" mnemonicParsing="false" onAction="#handleCancelClick" text="Record" />
+      <Button layoutX="141.0" layoutY="92.0" mnemonicParsing="false" onAction="#handleCancelClick" text="Cancel" />
+   </children>
+</AnchorPane>

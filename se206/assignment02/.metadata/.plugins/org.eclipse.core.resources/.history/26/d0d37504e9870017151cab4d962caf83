@@ -1,0 +1,21 @@
+package MathsAidApp;
+
+import java.awt.Button;
+
+public class Controller {
+
+    public Button createButton;
+
+    public void handleCreateClick() {
+    		System.out.println("create goes here");
+    }
+    
+    public void handleDeleteClick() {
+    	System.out.println("Delete Here");
+    }
+    
+    public void handlePlayClick() {
+    	System.out.println("Play here");
+    }
+
+}

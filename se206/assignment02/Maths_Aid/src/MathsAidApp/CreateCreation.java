@@ -1,0 +1,78 @@
+package MathsAidApp;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class CreateCreation extends CreationProcess {
+	
+	private String _title;
+	private Stage _stage;
+	
+	public CreateCreation(String title) {
+		super();
+		_title = title;
+	}
+	
+	public void create() {
+		// Ensure a creations directory exists
+		makeCreationsDirectory();
+		
+		// Record audio in new pop up window
+		popup();
+		
+			
+	}
+	
+	private void makeCreationsDirectory() {
+		File f = new File(getHostFolder() + "/creations");
+		
+		if (!f.exists()) {
+			f.mkdir();
+		}
+	}
+	
+	public void makeVideo() {
+		ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -f lavfi -i " +
+				"color=c=blue:s=320x240:d=3.0 -vf " + 
+				"\"drawtext=fontfile=/path/to/font.ttf:fontsize=30:" + 
+				" fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='" + _title + "'\" \\\n" + 
+				"\"" + _title + "\".mp4;");
+		
+		// Set correct directory for making video file
+		builder.directory(new File(getHostFolder() + 
+				System.getProperty("file.separator") + "creations"));
+		
+		try {
+			Process process = builder.start();
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
+		}	
+	}
+	
+	private void popup() {
+		try {
+			Parent root = FXMLLoader.load(getClass().getResource("AudioPopup.fxml"));
+			_stage = new Stage();
+			_stage.setTitle("Record Audio");
+			_stage.setScene(new Scene(root, 200, 50));
+			_stage.show();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void handleRecordClick() {
+		System.out.println("bchus du");
+	}
+	
+	public void handleCancelClick() {
+		
+	}
+}

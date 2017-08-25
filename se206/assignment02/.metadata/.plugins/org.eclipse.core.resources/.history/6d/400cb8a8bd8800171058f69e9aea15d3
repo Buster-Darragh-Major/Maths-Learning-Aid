@@ -1,0 +1,14 @@
+package MathsAidApp;
+
+import java.util.Map;
+
+public abstract class CreationProcess {
+
+	
+	protected String _bash = "/bin/bash";
+	
+	protected String getHostFolder() {
+		return System.getProperty("user.dir");
+	}
+	
+}

@@ -1,0 +1,8 @@
+package MathsAidApp;
+
+public abstract class CreationProcess {
+
+	protected String _bash = "bin/bash";
+	protected String _hostFolder = "$( dirname \"${BASH_SOURCE[0]}\" )";
+	
+}

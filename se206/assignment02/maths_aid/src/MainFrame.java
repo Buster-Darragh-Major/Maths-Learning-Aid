@@ -4,7 +4,6 @@ import java.awt.*;
 public class MainFrame extends JFrame {
     public MainFrame(String title) {
         super(title);
-
         // Set layout manager
         setLayout(new BorderLayout());
 

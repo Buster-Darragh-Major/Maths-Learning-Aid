@@ -1,0 +1,50 @@
+package MathsAidApp;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+
+public class CreateCreation extends CreationProcess {
+	
+	private String _title;
+	
+	public CreateCreation(String title) {
+		super();
+		_title = title;
+	}
+	
+	public void create() {
+		// Ensure a creations directory exists
+		makeCreationsDirectory();
+		
+		// Record audio in new pop up window
+		
+		
+		ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -f lavfi -i " +
+				"color=c=blue:s=320x240:d=3.0 -vf " + 
+				"\"drawtext=fontfile=/path/to/font.ttf:fontsize=30:" + 
+				" fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='" + _title + "'\" \\\n" + 
+				"\"" + _title + "\".mp4;");
+		
+		// Set correct directory for making video file
+		builder.directory(new File(getHostFolder() + 
+				System.getProperty("file.separator") + "creations"));
+		
+		try {
+			Process process = builder.start();
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
+		}		
+	}
+	
+	private void makeCreationsDirectory() {
+		File f = new File(getHostFolder() + "/creations");
+		
+		if (!f.exists()) {
+			f.mkdir();
+		}
+	}
+	
+	private void recordAudio
+}

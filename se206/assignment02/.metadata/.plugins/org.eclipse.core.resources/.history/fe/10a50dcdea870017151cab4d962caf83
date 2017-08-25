@@ -1,0 +1,23 @@
+package MathsAidApp;
+
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+
+public class Controller {
+
+    public Button createButton;
+    public TextField createField;
+
+    public void handleCreateClick() {
+    		System.out.println(createField.getText());
+    }
+    
+    public void handleDeleteClick() {
+    	System.out.println("Delete Here");
+    }
+    
+    public void handlePlayClick() {
+    	System.out.println("Play here");
+    }
+
+}
