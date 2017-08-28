@@ -12,9 +12,11 @@ import javafx.scene.control.ButtonBar.ButtonData;
 public class CreationDelete extends CreationProcess {
 
 	private String _deletable;
+	private Controller _controller;
 	
-	public CreationDelete(String deletable) {
+	public CreationDelete(String deletable, Controller controller) {
 		_deletable = deletable;
+		_controller = controller;
 	}
 	
 	@Override
@@ -24,6 +26,13 @@ public class CreationDelete extends CreationProcess {
 		}
 		
 		popup();
+		
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+		}
+		
+		_controller.updateList();
 	}
 	
 	private void popup() {

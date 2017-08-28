@@ -2,22 +2,29 @@ package MathsAidApp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import javafx.animation.PauseTransition;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.util.Duration;
 import javafx.scene.control.ButtonType;
 
 public class CreationCreate extends CreationProcess {
 	
 	private String _title;
+	private Controller _controller;
 	
 	// Constructor
-	public CreationCreate(String title) {
+	public CreationCreate(String title, Controller controller) {
 		super();
 		_title = title;
+		_controller = controller;
 	}
+	
+	// TODO add threading capability for cancelling process.
 	
 	/**
 	 * Creates a video file based on input title name, includes 3 second recording as
@@ -41,6 +48,13 @@ public class CreationCreate extends CreationProcess {
 		makeCreationsDirectory();
 		
 		popup();
+		
+		try {
+			Thread.sleep(3400);
+		} catch (InterruptedException e) {
+		}
+		
+		_controller.updateList();
 	}
 	
 	// Creates a creations directory in the location of running if there isn't one
@@ -77,8 +91,33 @@ public class CreationCreate extends CreationProcess {
 		Optional<ButtonType> result = audioPopup.showAndWait();
 		
 		if (result.get() == buttonTypeRecord) {
+			recordingAlert();
 			createVideo();
 		}
+	}
+	
+	private void recordingAlert() {
+		Alert recordingPopup = new Alert(AlertType.INFORMATION);
+		recordingPopup.setTitle("Recording...");
+		recordingPopup.setHeaderText(null);
+		recordingPopup.setContentText("Recording!");
+		
+		ButtonType buttonTypeCancel = new ButtonType("Cancel");
+		
+		recordingPopup.getButtonTypes().setAll(buttonTypeCancel);
+		
+		PauseTransition delay = new PauseTransition(Duration.seconds(3));
+		delay.setOnFinished(e -> recordingPopup.hide());
+		delay.play();
+		
+		Optional<ButtonType> result = recordingPopup.showAndWait();
+		try {
+			if (result.get() == buttonTypeCancel) {
+				System.out.println("cdbhucufe");
+			}
+		} catch (NoSuchElementException e) {
+		}
+		
 	}
 	
 	private void createVideo() {
