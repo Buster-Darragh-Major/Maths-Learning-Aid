@@ -6,6 +6,6 @@ public abstract class CreationProcess {
 		return System.getProperty("user.dir");
 	}
 	
-	public abstract void start() throws MathsAidException;
+	public abstract void begin() throws MathsAidException;
 	
 }

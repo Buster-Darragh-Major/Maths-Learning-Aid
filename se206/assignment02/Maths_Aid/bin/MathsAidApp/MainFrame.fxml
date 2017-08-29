@@ -13,6 +13,6 @@
       <Button fx:id="_createButton" layoutX="254.0" layoutY="329.0" mnemonicParsing="false" onAction="#handleCreateClick" text="Create" />
       <Button fx:id="_deleteButton" layoutX="531.0" layoutY="274.0" mnemonicParsing="false" onAction="#handleDeleteClick" text="Delete" />
       <Button fx:id="_playButton" layoutX="436.0" layoutY="274.0" mnemonicParsing="false" onAction="#handlePlayClick" prefHeight="26.0" prefWidth="61.0" text="Play" />
-      <MediaView fitHeight="200.0" fitWidth="200.0" layoutX="414.0" layoutY="38.0" />
+      <MediaView fx:id="_embeddedVideo" fitHeight="200.0" fitWidth="200.0" layoutX="414.0" layoutY="38.0" />
    </children>
 </AnchorPane>

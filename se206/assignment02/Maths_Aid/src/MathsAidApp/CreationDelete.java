@@ -20,17 +20,12 @@ public class CreationDelete extends CreationProcess {
 	}
 	
 	@Override
-	public void start() throws MathsAidException {
-		if (_deletable.equals("")) {
+	public void begin() throws MathsAidException {
+		if ((_deletable == null) || (_deletable.equals(""))) {
 			throw new MathsAidException();
 		}
 		
 		popup();
-		
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-		}
 		
 		_controller.updateList();
 	}
@@ -55,7 +50,7 @@ public class CreationDelete extends CreationProcess {
 
 	private void delete() {
 		ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c",
-				"rm -f \"" + _deletable + ".mp4\" &> debug.txt");
+				"rm -f \"" + _deletable + ".mp4\"");
 		
 		builder.directory(new File(getHostFolder() + 
 				System.getProperty("file.separator") + "creations"));

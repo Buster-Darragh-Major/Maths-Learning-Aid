@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javafx.animation.PauseTransition;
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -32,7 +33,7 @@ public class CreationCreate extends CreationProcess {
 	 * @throws MathsAidException
 	 */
 	@Override
-	public void start() throws MathsAidException {
+	public void begin() throws MathsAidException {
 		File tmpDir = new File(getHostFolder() + 
 				System.getProperty("file.separator") + "creations" + 
 				System.getProperty("file.separator") + _title + ".mp4");
@@ -48,11 +49,6 @@ public class CreationCreate extends CreationProcess {
 		makeCreationsDirectory();
 		
 		popup();
-		
-		try {
-			Thread.sleep(3400);
-		} catch (InterruptedException e) {
-		}
 		
 		_controller.updateList();
 	}
@@ -91,8 +87,8 @@ public class CreationCreate extends CreationProcess {
 		Optional<ButtonType> result = audioPopup.showAndWait();
 		
 		if (result.get() == buttonTypeRecord) {
-			recordingAlert();
 			createVideo();
+			recordingAlert();
 		}
 	}
 	
@@ -113,39 +109,49 @@ public class CreationCreate extends CreationProcess {
 		Optional<ButtonType> result = recordingPopup.showAndWait();
 		try {
 			if (result.get() == buttonTypeCancel) {
-				System.out.println("cdbhucufe");
+				// TODO end process
 			}
 		} catch (NoSuchElementException e) {
 		}
-		
 	}
 	
 	private void createVideo() {
-		ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c",
-				// Record audio
-				"ffmpeg -f alsa -i hw:0 -t 3 -y \"" + _title + ".wav\" &> /dev/null;" +
+		Task<Void> task = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				String command = // Record audio
+						"ffmpeg -f alsa -i hw:0 -t 3 -y \"" + _title + ".wav\" &> /dev/null;" +
+								
+						// Make Video
+						"ffmpeg -f lavfi -i color=c=blue:s=320x240:d=3.0 -vf " + 
+						"\"drawtext=fontfile=/path/to/font.ttf:fontsize=30:" + 
+						" fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='" + _title + "'\" \\\n" + 
+						"\"" + _title + "\".mp4;" +
 						
-				// Make Video
-				"ffmpeg -f lavfi -i color=c=blue:s=320x240:d=3.0 -vf " + 
-				"\"drawtext=fontfile=/path/to/font.ttf:fontsize=30:" + 
-				" fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='" + _title + "'\" \\\n" + 
-				"\"" + _title + "\".mp4;" +
+						// Combine files
+						"ffmpeg -y -i \"" + _title + ".wav\" -i \"" + _title + 
+						".mp4\" -vcodec copy -strict -2 \"" + _title + ".mp4\";" +
+						
+						// Delete excess
+						"rm -f \"" + _title + ".wav\"";
+				System.out.println(command);
+				ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", command);
 				
-				// Combine files
-				"ffmpeg -y -i \"" + _title + ".wav\" -i \"" + _title + 
-				".mp4\" -vcodec copy \"" + _title + ".mp4\";" +
+				builder.directory(new File(getHostFolder() + 
+						System.getProperty("file.separator") + "creations"));
 				
-				// Delete excess
-				"rm -f \"" + _title + ".wav\"");
+				try {
+					@SuppressWarnings("unused")
+					Process process = builder.start();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		};
 		
-		builder.directory(new File(getHostFolder() + 
-				System.getProperty("file.separator") + "creations"));
-		
-		try {
-			@SuppressWarnings("unused")
-			Process process = builder.start();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
 	}
 }
