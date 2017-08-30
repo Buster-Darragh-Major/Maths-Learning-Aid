@@ -40,8 +40,11 @@ public class CreationPlay extends CreationProcess {
 			// Set the videoWindow object to play the selected MediaPlayer 
 			_videoWindow.setMediaPlayer(player);
 			_videoWindow.getMediaPlayer().seek(Duration.ZERO);
-			_videoWindow.getMediaPlayer().play();
 		} catch (MalformedURLException e) {
 		}
+	}
+	
+	public void play() {
+		_videoWindow.getMediaPlayer().play();
 	}
 }

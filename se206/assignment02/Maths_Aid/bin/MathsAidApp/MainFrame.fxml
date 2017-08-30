@@ -8,7 +8,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="375.0" prefWidth="656.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MathsAidApp.Controller">
    <children>
-      <ListView fx:id="_creationList" layoutX="16.0" layoutY="15.0" prefHeight="305.0" prefWidth="340.0" />
+      <ListView fx:id="_creationList" layoutX="16.0" layoutY="15.0" onMouseClicked="#updateThumbnail" prefHeight="305.0" prefWidth="340.0" />
       <TextField fx:id="_createField" layoutX="17.0" layoutY="329.0" prefHeight="26.0" prefWidth="233.0" promptText="New Creation..." />
       <Button fx:id="_createButton" layoutX="254.0" layoutY="329.0" mnemonicParsing="false" onAction="#handleCreateClick" text="Create" />
       <Button fx:id="_deleteButton" layoutX="531.0" layoutY="274.0" mnemonicParsing="false" onAction="#handleDeleteClick" text="Delete" />

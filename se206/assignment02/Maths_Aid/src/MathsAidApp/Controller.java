@@ -27,7 +27,8 @@ public class Controller implements Initializable {
 	@FXML
     public MediaView _embeddedVideo;
 	
-	//TODO: add a refresh button?
+	// TODO: add a refresh button?
+	// TODO: take out magic numbers
 
     /**
      * Creates a new CreationCreate object with input from the text field. If input is blank,
@@ -69,13 +70,13 @@ public class Controller implements Initializable {
      * occurs.
      */
     public void handlePlayClick() {
-    	// TODO add switching thumbnail function for clicking on different creations
     	// Create CreationPLay object with input from the list selection.
     	CreationPlay playCreation = new CreationPlay(_creationList.getSelectionModel().getSelectedItem(), _embeddedVideo);
     	
     	try {
-    		playCreation.begin();
     		// Call begin() on object, start playing process.
+    		playCreation.begin();
+    		playCreation.play();
     	} catch (MathsAidException e) {
     	}
     }
@@ -137,5 +138,15 @@ public class Controller implements Initializable {
 			_creationList.setItems(listContent);
 		} catch (Exception e) {
 		}
+	}
+	
+	public void updateThumbnail() {
+CreationPlay playCreation = new CreationPlay(_creationList.getSelectionModel().getSelectedItem(), _embeddedVideo);
+    	
+    	try {
+    		// Call begin() on object, start playing process.
+    		playCreation.begin();
+    	} catch (MathsAidException e) {
+    	}
 	}
 }
