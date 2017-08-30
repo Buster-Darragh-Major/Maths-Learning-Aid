@@ -17,6 +17,7 @@ public class CreationCreate extends CreationProcess {
 	
 	private String _title;
 	private Controller _controller;
+	private Process _process;
 	
 	// Constructor
 	public CreationCreate(String title, Controller controller) {
@@ -25,7 +26,6 @@ public class CreationCreate extends CreationProcess {
 		_controller = controller;
 	}
 	
-	// TODO add threading capability for cancelling process.
 	
 	/**
 	 * Creates a video file based on input title name, includes 3 second recording as
@@ -34,6 +34,7 @@ public class CreationCreate extends CreationProcess {
 	 */
 	@Override
 	public void begin() throws MathsAidException {
+		// Check to see if file already exists under same name, if so, prompt with invalid name dialogue
 		File tmpDir = new File(getHostFolder() + 
 				System.getProperty("file.separator") + "creations" + 
 				System.getProperty("file.separator") + _title + ".mp4");
@@ -42,19 +43,26 @@ public class CreationCreate extends CreationProcess {
 			throw new MathsAidException();
 		}
 		
+		// Ensure name is not empty string, if so, prompt with invalid name dialogue.
 		if (_title.equals("")) {
 			throw new MathsAidException();
 		}
 		
+		// Make a creations directory
 		makeCreationsDirectory();
 		
+		// Prompt user to hit record when ready
 		popup();
 		
+		// Update the list view in the GUI
 		_controller.updateList();
 	}
 	
-	// Creates a creations directory in the location of running if there isn't one
-	// already.
+	
+	/**
+	 * Creates a creations directory in the location of running if there isn't one
+	 * already.
+	 */
 	private void makeCreationsDirectory() {
 		File f = new File(getHostFolder() + 
 				System.getProperty("file.separator") + "creations");
@@ -64,6 +72,11 @@ public class CreationCreate extends CreationProcess {
 		}
 	}
 	
+	
+	/**
+	 * Prompt user with information that this creation already exists
+	 */
+	// TODO: ask if they want to overwrite their creation, implement logic
 	private void invalidPopup() {
 		Alert errorPopup = new Alert(AlertType.INFORMATION);
 		errorPopup.setTitle("Cannot Create Creation");
@@ -73,35 +86,54 @@ public class CreationCreate extends CreationProcess {
 		errorPopup.showAndWait();
 	}
 	
-	private void popup() {
+	
+	/**
+	 * Prompt user with information dialog on what their options are for creating a creation.
+	 * They are able to press 'cancel', which throws a MathsAidException and is caught by the 
+	 * controller, ending any creation process, or continue with the creation by pressing 
+	 * 'record', where recordVideo() and recordingAlert() are then called.
+	 * @throws MathsAidException
+	 */
+	private void popup() throws MathsAidException {
 		Alert audioPopup = new Alert(AlertType.CONFIRMATION);
 		audioPopup.setTitle("Record Audio");
 		audioPopup.setHeaderText(null);
 		audioPopup.setContentText("You are now about to record your audio, \n you will have 3 seconds to record.");
 		
+		// Set Buttons on dialogue
 		ButtonType buttonTypeRecord = new ButtonType("Record");
 		ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
-		
 		audioPopup.getButtonTypes().setAll(buttonTypeRecord, buttonTypeCancel);
 		
 		Optional<ButtonType> result = audioPopup.showAndWait();
 		
+		// If user hits record first create the .mp4 file, then prompt with recording popup.
 		if (result.get() == buttonTypeRecord) {
 			createVideo();
 			recordingAlert();
 		}
 	}
 	
-	private void recordingAlert() {
+	
+	/**
+	 * Prompts user with dialogue informing them that recording is taking place. They have
+	 * the option to cancel, which will destroy the recording process, delete any files already
+	 * made and finally throw a MathsAidException, caught by the controller and terminating
+	 * the process.
+	 * @throws MathsAidException
+	 */
+	private void recordingAlert() throws MathsAidException {
 		Alert recordingPopup = new Alert(AlertType.INFORMATION);
 		recordingPopup.setTitle("Recording...");
 		recordingPopup.setHeaderText(null);
 		recordingPopup.setContentText("Recording!");
 		
+		// Set only button to 'cancel'
 		ButtonType buttonTypeCancel = new ButtonType("Cancel");
-		
 		recordingPopup.getButtonTypes().setAll(buttonTypeCancel);
 		
+		// Ensure popup is only displayed for 3 seconds before automatically closing
+		// when recording is done.
 		PauseTransition delay = new PauseTransition(Duration.seconds(3));
 		delay.setOnFinished(e -> recordingPopup.hide());
 		delay.play();
@@ -109,17 +141,30 @@ public class CreationCreate extends CreationProcess {
 		Optional<ButtonType> result = recordingPopup.showAndWait();
 		try {
 			if (result.get() == buttonTypeCancel) {
-				// TODO end process
+				// If 'cancel' pressed, destroy the process, clean up the files and throw exception
+				_process.destroy();
+				deleteRemnants();
+				throw new MathsAidException();
 			}
 		} catch (NoSuchElementException e) {
 		}
 	}
 	
+	
+	/**
+	 * Implements a ProcessBuilder that builds a process object, then executing a series 
+	 * of bash commands that create a .mp4 file under the specifications of a process. 
+	 * Will create the video file in the creations directory in which the application 
+	 * is run from.
+	 */
 	private void createVideo() {
+		// Create new thread for creation making to occur in, recording takes time so allow
+		// GUI to be responsive and for cancellation to occur by assigning separate thread.
 		Task<Void> task = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-				String command = // Record audio
+				String command = 
+						// Record audio
 						"ffmpeg -f alsa -i hw:0 -t 3 -y \"" + _title + ".wav\" &> /dev/null;" +
 								
 						// Make Video
@@ -134,24 +179,51 @@ public class CreationCreate extends CreationProcess {
 						
 						// Delete excess
 						"rm -f \"" + _title + ".wav\"";
-				System.out.println(command);
+				// Build a builder with relevant bash command.
 				ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", command);
 				
+				// Change working directory of builder to creations folder found in directory
+				// where application is run.
 				builder.directory(new File(getHostFolder() + 
 						System.getProperty("file.separator") + "creations"));
 				
 				try {
-					@SuppressWarnings("unused")
-					Process process = builder.start();
+					// Start the process.
+					_process = builder.start();
 				} catch (IOException e) {
-					e.printStackTrace();
 				}
 				return null;
 			}
 		};
 		
+		// Start thread
 		Thread th = new Thread(task);
 		th.setDaemon(true);
 		th.start();
+	}
+	
+	
+	/**
+	 * Used when called by recordingAlert(), and cancel button has been pressed, i.e.
+	 * premature termination of the process has occurred and leftover files from the 
+	 * process need to be deleted.
+	 */
+	private void deleteRemnants() {
+		// Create builder with bash command targeting all files with the creation title 
+		// to delete.
+		ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c",
+				"rm -f \"" + _title + "\".*;");
+		
+		// Switch working directory for cleanup to take place to creations folder in directory
+		// application is run in.
+		builder.directory(new File(getHostFolder() + 
+				System.getProperty("file.separator") + "creations"));
+		
+		try {
+			@SuppressWarnings("unused")
+			// Start process
+			Process process = builder.start();
+		} catch (IOException e) {
+		}
 	}
 }
