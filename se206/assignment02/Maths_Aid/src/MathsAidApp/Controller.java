@@ -29,6 +29,9 @@ public class Controller implements Initializable {
 	
 	// TODO: add a refresh button?
 	// TODO: take out magic numbers
+	// TODO: Not allow certain input characters
+	// TODO: allow for user to listen to sound before saving
+	// TODO: order list of creation
 
     /**
      * Creates a new CreationCreate object with input from the text field. If input is blank,
