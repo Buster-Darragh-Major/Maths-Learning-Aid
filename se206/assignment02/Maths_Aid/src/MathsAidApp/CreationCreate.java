@@ -40,6 +40,7 @@ public class CreationCreate extends CreationProcess {
 				System.getProperty("file.separator") + _title + ".mp4");
 		if (tmpDir.exists()) {
 			invalidPopup();
+			_controller.updateList();
 			throw new MathsAidException();
 		}
 		
@@ -75,15 +76,24 @@ public class CreationCreate extends CreationProcess {
 	
 	/**
 	 * Prompt user with information that this creation already exists
+	 * @throws MathsAidException 
 	 */
 	// TODO: ask if they want to overwrite their creation, implement logic
-	private void invalidPopup() {
-		Alert errorPopup = new Alert(AlertType.INFORMATION);
+	private void invalidPopup() throws MathsAidException {
+		Alert errorPopup = new Alert(AlertType.CONFIRMATION);
 		errorPopup.setTitle("Cannot Create Creation");
 		errorPopup.setHeaderText(null);
-		errorPopup.setContentText("Error: A creation already exists with the name \"" + _title + "\"");
+		errorPopup.setContentText("A creation already exists with the name \"" + _title + "\". Do you wish to overwrite?");
 		
-		errorPopup.showAndWait();
+		ButtonType buttonTypeOverwrite = new ButtonType("Overwrite");
+		ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+		errorPopup.getButtonTypes().setAll(buttonTypeOverwrite, buttonTypeCancel);
+		
+		Optional<ButtonType> result = errorPopup.showAndWait();
+		
+		if (result.get() == buttonTypeOverwrite) {
+			popup();
+		}
 	}
 	
 	
@@ -108,9 +118,11 @@ public class CreationCreate extends CreationProcess {
 		Optional<ButtonType> result = audioPopup.showAndWait();
 		
 		// If user hits record first create the .mp4 file, then prompt with recording popup.
+		// Then prompt user with popup allowing to listen and re record audio.
 		if (result.get() == buttonTypeRecord) {
 			createVideo();
 			recordingAlert();
+			confirmationPopup();
 		}
 	}
 	
@@ -168,7 +180,7 @@ public class CreationCreate extends CreationProcess {
 						"ffmpeg -f alsa -i hw:0 -t 3 -y \"" + _title + ".wav\" &> /dev/null;" +
 								
 						// Make Video
-						"ffmpeg -f lavfi -i color=c=blue:s=320x240:d=3.0 -vf " + 
+						"ffmpeg -y -f lavfi -i color=c=blue:s=320x240:d=3.0 -vf " + 
 						"\"drawtext=fontfile=/path/to/font.ttf:fontsize=30:" + 
 						" fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='" + _title + "'\" \\\n" + 
 						"\"" + _title + "\".mp4;" +
@@ -200,6 +212,54 @@ public class CreationCreate extends CreationProcess {
 		Thread th = new Thread(task);
 		th.setDaemon(true);
 		th.start();
+	}
+	
+	
+	private void confirmationPopup() throws MathsAidException {
+		Alert alertPopup = new Alert(AlertType.INFORMATION);
+		alertPopup.setTitle("Creatio Confirmation");
+		alertPopup.setHeaderText(null);
+		alertPopup.setContentText("Would you like to listen to your audio before you create?");
+		
+		// Set only button to 'cancel'
+		ButtonType buttonTypeReRecord = new ButtonType("Rerecord");
+		ButtonType buttonTypeListen = new ButtonType("Listen");
+		ButtonType buttonTypeCreate = new ButtonType("Create!");
+		alertPopup.getButtonTypes().setAll(buttonTypeReRecord, buttonTypeListen, buttonTypeCreate);
+		
+		Optional<ButtonType> result = alertPopup.showAndWait();
+		if (result.get() == buttonTypeListen) {
+			Task<Void> task = new Task<Void>() {
+				@Override
+				protected Void call() throws Exception {
+					String command = "ffplay -nodisp \"" + _title + ".mp4\"";
+					
+					ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", command);
+					
+					builder.directory(new File(getHostFolder() + 
+							System.getProperty("file.separator") + "creations"));
+					
+					try {
+						@SuppressWarnings("unused")
+						Process process = builder.start();
+					} catch (IOException e) {
+					}
+					return null;
+				}
+			};
+			
+			Thread th = new Thread(task);
+			th.setDaemon(true);
+			th.start();
+			
+			confirmationPopup();
+		} else if (result.get() == buttonTypeReRecord) {
+			createVideo();
+			recordingAlert();
+			confirmationPopup();
+		} else if (result.get() == buttonTypeCreate) {
+			// Continue
+		}
 	}
 	
 	

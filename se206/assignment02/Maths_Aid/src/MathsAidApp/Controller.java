@@ -30,7 +30,7 @@ public class Controller implements Initializable {
 	// TODO: add a refresh button?
 	// TODO: take out magic numbers
 	// TODO: Not allow certain input characters
-	// TODO: allow for user to listen to sound before saving
+	// TODO: comment relistening logic
 	// TODO: order list of creation
 
     /**
