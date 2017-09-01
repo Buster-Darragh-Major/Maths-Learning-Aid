@@ -78,7 +78,6 @@ public class CreationCreate extends CreationProcess {
 	 * Prompt user with information that this creation already exists
 	 * @throws MathsAidException 
 	 */
-	// TODO: ask if they want to overwrite their creation, implement logic
 	private void invalidPopup() throws MathsAidException {
 		Alert errorPopup = new Alert(AlertType.CONFIRMATION);
 		errorPopup.setTitle("Cannot Create Creation");
@@ -215,27 +214,36 @@ public class CreationCreate extends CreationProcess {
 	}
 	
 	
+	/**
+	 * Prompt user with popup allowing them to relisten, rerecord or finish their creation.
+	 * @throws MathsAidException
+	 */
 	private void confirmationPopup() throws MathsAidException {
 		Alert alertPopup = new Alert(AlertType.INFORMATION);
 		alertPopup.setTitle("Creatio Confirmation");
 		alertPopup.setHeaderText(null);
 		alertPopup.setContentText("Would you like to listen to your audio before you create?");
 		
-		// Set only button to 'cancel'
+		// Set buttons on popup
 		ButtonType buttonTypeReRecord = new ButtonType("Rerecord");
 		ButtonType buttonTypeListen = new ButtonType("Listen");
 		ButtonType buttonTypeCreate = new ButtonType("Create!");
 		alertPopup.getButtonTypes().setAll(buttonTypeReRecord, buttonTypeListen, buttonTypeCreate);
 		
 		Optional<ButtonType> result = alertPopup.showAndWait();
+		// If user chooses to relisten create new thread for listening
 		if (result.get() == buttonTypeListen) {
 			Task<Void> task = new Task<Void>() {
 				@Override
 				protected Void call() throws Exception {
+					// Use ffplay on .mp4 with no display
 					String command = "ffplay -nodisp \"" + _title + ".mp4\"";
 					
+					// Build a builder with the relevant bash command
 					ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", command);
 					
+					// Change working directory of builder to creations folder found in directory
+					// where application is run.
 					builder.directory(new File(getHostFolder() + 
 							System.getProperty("file.separator") + "creations"));
 					
@@ -248,12 +256,15 @@ public class CreationCreate extends CreationProcess {
 				}
 			};
 			
+			// Begin thread
 			Thread th = new Thread(task);
 			th.setDaemon(true);
 			th.start();
 			
+			// After relistening has occurred prompt user with fresh confirmation window
 			confirmationPopup();
 		} else if (result.get() == buttonTypeReRecord) {
+			// If user chooses to re record their creation, create a new creation from scratch
 			createVideo();
 			recordingAlert();
 			confirmationPopup();

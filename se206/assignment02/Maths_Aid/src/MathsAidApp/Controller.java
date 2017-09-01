@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
@@ -29,7 +30,6 @@ public class Controller implements Initializable {
 	
 	// TODO: add a refresh button?
 	// TODO: take out magic numbers
-	// TODO: Not allow certain input characters
 	// TODO: comment relistening logic
 	// TODO: order list of creation
 
@@ -39,7 +39,7 @@ public class Controller implements Initializable {
      */
     public void handleCreateClick() {
     	// Create a CreationCreate object with input from TextField.
-    	CreationCreate createCreation = new CreationCreate(_createField.getText(), this);
+    	CreationCreate createCreation = new CreationCreate(_createField.getText().trim(),/*remove leading/trailing spaces*/ this);
     	
     	try {
     		// Call begin() in object, start creation process.
@@ -135,9 +135,10 @@ public class Controller implements Initializable {
 				}
 			}
 			
-			// Create ObservableList<String> from creations ArrayList<String> and set the 
-			// GUI list to read from it.
+			// Create ObservableList<String> from creations ArrayList<String>, order alphabetically 
+			// and set the GUI list to read from it.
 			ObservableList<String> listContent = FXCollections.observableArrayList(creations);
+			Collections.sort(listContent);
 			_creationList.setItems(listContent);
 		} catch (Exception e) {
 		}
