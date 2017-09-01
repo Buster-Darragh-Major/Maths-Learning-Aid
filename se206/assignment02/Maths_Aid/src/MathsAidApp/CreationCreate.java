@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
@@ -39,8 +41,16 @@ public class CreationCreate extends CreationProcess {
 				System.getProperty("file.separator") + "creations" + 
 				System.getProperty("file.separator") + _title + ".mp4");
 		if (tmpDir.exists()) {
-			invalidPopup();
+			invalidPopupAlreadyExists();
 			_controller.updateList();
+			throw new MathsAidException();
+		}
+		
+		// Check for invalid characters, only valid characters are letters, numbers and spaces
+		Pattern p = Pattern.compile("[^a-zA-Z\\d\\s:]");
+		Matcher m = p.matcher(_title);
+		if (m.find()) {
+			invalidPopupInvalidCharacter();
 			throw new MathsAidException();
 		}
 		
@@ -78,7 +88,7 @@ public class CreationCreate extends CreationProcess {
 	 * Prompt user with information that this creation already exists
 	 * @throws MathsAidException 
 	 */
-	private void invalidPopup() throws MathsAidException {
+	private void invalidPopupAlreadyExists() throws MathsAidException {
 		Alert errorPopup = new Alert(AlertType.CONFIRMATION);
 		errorPopup.setTitle("Cannot Create Creation");
 		errorPopup.setHeaderText(null);
@@ -93,6 +103,22 @@ public class CreationCreate extends CreationProcess {
 		if (result.get() == buttonTypeOverwrite) {
 			popup();
 		}
+	}
+	
+	
+	/**
+	 * prompt user with information that only certain characters are allowed
+	 */
+	private void invalidPopupInvalidCharacter() {
+		Alert errorPopup = new Alert(AlertType.CONFIRMATION);
+		errorPopup.setTitle("Cannot Create Creation");
+		errorPopup.setHeaderText(null);
+		errorPopup.setContentText("Invalid character, only letters, numbers and spaces allowed.");
+		
+		ButtonType buttonTypeOK = new ButtonType("OK", ButtonData.CANCEL_CLOSE);
+		errorPopup.getButtonTypes().setAll(buttonTypeOK);
+		
+		errorPopup.showAndWait();
 	}
 	
 	

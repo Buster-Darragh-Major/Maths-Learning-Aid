@@ -10,6 +10,9 @@ import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -27,11 +30,6 @@ public class Controller implements Initializable {
     public ListView<String> _creationList;
 	@FXML
     public MediaView _embeddedVideo;
-	
-	// TODO: add a refresh button?
-	// TODO: take out magic numbers
-	// TODO: comment relistening logic
-	// TODO: order list of creation
 
     /**
      * Creates a new CreationCreate object with input from the text field. If input is blank,
@@ -94,56 +92,62 @@ public class Controller implements Initializable {
 	}
 	
 	public void updateList() {
-		// TODO: figure out how to rest thread without freezing
-		/*Task<Void> task = new Task<Void>() {
+		Task<Void> task = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
+				// Wait one second for creations directory contents to properly update, ensures 
+				// list is not updated before directory changes have been made.
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 				}
 				return null;
 			}
-		};*/
+		};
 		
-		// Wait one second for creations directory contents to properly update, ensures 
-		// list is not updated before directory changes have been made.
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-		}
-		
-		/*Thread th = new Thread(task);
-		th.setDaemon(true);
-		th.start();*/
-		try {
-			// Create file object modelling the creations directory
-			File f = new File(System.getProperty("user.dir") + 
-					System.getProperty("file.separator") + "creations");
-			
-			// Create ArrayList<String> of all file names found in folder.
-			ArrayList<String> creations = new ArrayList<String>(Arrays.asList(f.list()));
-			
-			// Loop backwards through list, remove non- .mp4's and then remove .mp4 extension
-			for (int i = creations.size() - 1; i >= 0; i--) {
-				if (!creations.get(i).contains(".mp4")) {
-					// If creation name does not have .mp4 extension, remove it from list
-					creations.remove(i);
-				} else {
-					// If creation name does have .mp4 extension, remove it from string
-					creations.set(i, creations.get(i).replaceAll(".mp4", ""));
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent event) {
+				try {
+					// Create file object modelling the creations directory
+					File f = new File(System.getProperty("user.dir") + 
+							System.getProperty("file.separator") + "creations");
+					
+					// Create ArrayList<String> of all file names found in folder.
+					ArrayList<String> creations = new ArrayList<String>(Arrays.asList(f.list()));
+					
+					// Loop backwards through list, remove non- .mp4's and then remove .mp4 extension
+					for (int i = creations.size() - 1; i >= 0; i--) {
+						if (!creations.get(i).contains(".mp4")) {
+							// If creation name does not have .mp4 extension, remove it from list
+							creations.remove(i);
+						} else {
+							// If creation name does have .mp4 extension, remove it from string
+							creations.set(i, creations.get(i).replaceAll(".mp4", ""));
+						}
+					}
+					
+					// Create ObservableList<String> from creations ArrayList<String>, order alphabetically 
+					// and set the GUI list to read from it.
+					ObservableList<String> listContent = FXCollections.observableArrayList(creations);
+					Collections.sort(listContent);
+					_creationList.setItems(listContent);
+				} catch (Exception e) {
 				}
 			}
-			
-			// Create ObservableList<String> from creations ArrayList<String>, order alphabetically 
-			// and set the GUI list to read from it.
-			ObservableList<String> listContent = FXCollections.observableArrayList(creations);
-			Collections.sort(listContent);
-			_creationList.setItems(listContent);
-		} catch (Exception e) {
-		}
+		});
+		
+		// Start thread
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
 	}
 	
+	
+	/*
+	 * Updates thumbnail view in GUI. Method reads contents of the creations folder and displays
+	 * in an alphabetical order.
+	 */
 	public void updateThumbnail() {
 CreationPlay playCreation = new CreationPlay(_creationList.getSelectionModel().getSelectedItem(), _embeddedVideo);
     	
